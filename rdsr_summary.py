@@ -224,7 +224,12 @@ class DoseSummaryApp:
     """    
     
     def __init__(self, root):
-        
+        """
+        Initialise the DoseSummaryApp with the given Tkinter root window.
+
+        Parameters:
+            root (tk.Tk): The root Tkinter window
+        """
         # Initialise main window
         self.root = root
         self.root.title("RDSR Summary")
@@ -670,7 +675,7 @@ class DoseSummaryApp:
         """
         Remove a specific dynamic filter and reapply the remaining filters.
     
-        Args:
+        Parameters:
             column (str): The name of the column for the filter to remove
             value (str): The filter value associated with the column
     
@@ -849,9 +854,23 @@ class DoseSummaryApp:
 
 
     def show_summary_stats(self):
+        """
+        Display summary statistics (count, mean, median, min, max, std) for numeric columns in the filtered data.
+    
+        This method:
+            - Extracts data from the currently visible Treeview rows
+            - Identifies and selects numeric columns (excluding specific unwanted variables)
+            - Calculates basic summary statistics
+            - Displays the results in a new pop-up window with a scrollable Treeview
+            - Handles missing or non-numeric data
+            - Automatically skips non-numeric columns and specific excluded variables
+    
+        Returns:
+            None
+        """
         
         if not self.tree.get_children():
-            messagebox.showinfo("No Data", "No filtered data to summarize.")
+            messagebox.showinfo("No Data", "No filtered data to summarise.")
             return
     
         # Get column headers from Treeview
@@ -898,7 +917,6 @@ class DoseSummaryApp:
         
         # Remove unwanted columns
         numeric_data = numeric_data.drop(columns=[col for col in excluded_variables if col in numeric_data.columns])
-
     
         # Summary statistics
         stats = numeric_data.describe().loc[["count", "mean", "50%", "min", "max", "std"]]
@@ -928,7 +946,24 @@ class DoseSummaryApp:
         tree.configure(xscrollcommand=scrollbar.set)
         scrollbar.pack(fill="x")
         
+        
     def plot_exposures_over_time(self):
+        """
+        Plot the number of exposures recorded per day as a bar chart
+    
+        This method:
+            - Uses currently filtered data if available, or the full dataset otherwise
+            - Groups data by 'ContentDate' and counts the number of exposures per day
+            - Displays an interactive bar plot using Plotly
+    
+        Handles:
+            - Missing 'ContentDate' or 'PatientID' columns
+            - Empty datasets after filtering or grouping
+    
+        Returns:
+            None
+        """
+        
         # Use filtered data if available
         if hasattr(self, 'filtered_data'):
             df = self.filtered_data.copy()
@@ -969,6 +1004,19 @@ class DoseSummaryApp:
         fig.show()
         
     def export_multi_exposures_to_csv(self):
+        """
+        Export the latest multiple exposures summary (≥3 exposures per patient per day) to a CSV file.
+    
+        This method:
+            - Checks if the `latest_multi_exposures_df` exists and is non-empty
+            - Prompts the user to choose a save location and filename
+            - Saves the DataFrame to a CSV file without the index
+            - Provides success or error messages based on the outcome
+    
+        Returns:
+            None
+        """
+        
         if not hasattr(self, "latest_multi_exposures_df") or self.latest_multi_exposures_df.empty:
             messagebox.showinfo("No Data", "There is no data to export.")
             return
